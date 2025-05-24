@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Frontend Mentor | Room homepage</title>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./images/favicon-32x32.png"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/main.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrapper">
+        <div class="site-header__inner">
+          <a href="/">
+            <img src="images/logo.svg" alt="Room Home" />
+          </a>
+          <button
+            aria-expanded="false"
+            aria-haspopup="true"
+            aria-controls="primaryNav"
+            aria-label="open main menu"
+          >
+            <span class="line"></span>
+            <span class="line"></span>
+            <span class="line"></span>
+          </button>
+          <nav id="primaryNav" class="primary-nav" aria-label="Main navigation">
+            <ul>
+              <li><a href="/">Home</a></li>
+              <li><a href="#">Shop</a></li>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="hero">
+        <div class="hero__media">
+          <picture class="hero__picture">
+            <source
+              srcset="images/desktop-image-hero-1.jpg"
+              media="(min-width: 760px)"
+            />
+            <img
+              src="images/mobile-image-hero-1.jpg"
+              alt="A modern dining table surrounded by white chairs with
+              a decorative bonsai plant placed on top"
+            />
+          </picture>
+        </div>
+        <div class="hero__text">
+          <h1 class="text-lg">Discover innovative ways to decorate</h1>
+          <p>
+            We provide unmatched quality, comfort, and style for property owners
+            across the country. Our experts combine form and function in
+            bringing your vision to life. Create a room in your own style with
+            our collection and make your property a reflection of you and what
+            you love.
+          </p>
+          <a class="button" href="#">Shop now</a>
+          <div class="slider-controls">
+            <button
+              id="sliderPrev"
+              class="slider-button slider-button--prev"
+              aria-label="Previous slide"
+            ></button>
+            <button
+              id="sliderNext"
+              class="slider-button slider-button--next"
+              aria-label="Next slide"
+            ></button>
+          </div>
+        </div>
+      </section>
+      <section class="about">
+        <div class="about__image">
+          <img
+            src="images/image-about-dark.jpg"
+            alt="A living area with two modern black armchairs, a round wooden table, 
+            and a white bowl, softly lit against a dark background"
+          />
+        </div>
+        <div class="about__text flow">
+          <h2>About our furniture</h2>
+          <p>
+            Our multifunctional collection blends design and function to suit
+            your individual taste. Make each room unique, or pick a cohesive
+            theme that best express your interests and what inspires you. Find
+            the furniture pieces you need, from traditional to contemporary
+            styles or anything in between. Product specialists are available to
+            help you create your dream space.
+          </p>
+        </div>
+        <div class="about__image">
+          <img
+            src="images/image-about-light.jpg"
+            alt="A white chair with a rounded backrest, positioned on a light gray floor"
+          />
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
