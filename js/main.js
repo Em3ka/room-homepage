@@ -1,14 +1,18 @@
+const navToggle = document.querySelector('[aria-controls="primaryNav"]');
+const navWrapper = document.getElementById('primaryNav');
 const nextButton = document.getElementById('sliderNext');
 const prevButton = document.getElementById('sliderPrev');
 const hero = document.getElementById('hero');
 const heroPicture = document.getElementById('heroPicture');
 const heroTitle = document.getElementById('heroTitle');
 const heroBody = document.getElementById('heroBody');
-const heroSource = document.querySelector('#heroPicture source');
-const heroImg = document.querySelector('#heroPicture img');
+const slider = document.querySelector('.hero__media');
+const overlay = document.getElementById('overlay');
 
 const SWIPE_THRESHOLD = 50;
-let currentSlide = 0;
+const MOBILE_BREAKPOINT = 1110;
+let currentIndex = 0;
+let isTransitioning = false;
 let touchStartX = 0;
 let touchEndX = 0;
 let slideIntervalId;
@@ -32,10 +36,50 @@ const images = [
     desktop: './images/desktop-image-hero-3.jpg',
     mobile: './images/mobile-image-hero-3.jpg',
     alt: 'Minimalist living room setup',
-    title: 'Shop now Manufactured with the best materials',
+    title: 'Manufactured with the best materials',
     body: 'Our modern furniture store provide a high level of quality. Our company has invested in advanced technology to ensure that every product is made as perfect and as consistent as possible. With three decades of experience in this industry, we understand what customers want for their home and office.',
   },
 ];
+
+const renderNav = function (state) {
+  document.querySelector('.site-header').classList.toggle('nav-open', state);
+};
+
+const toggleNavMenu = function () {
+  const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+  navToggle.setAttribute('aria-expanded', !isExpanded);
+  navToggle.setAttribute(
+    'aria-label',
+    !isExpanded ? 'close main menu' : 'open main menu'
+  );
+  renderNav(!isExpanded);
+  overlay.toggleAttribute('hidden', isExpanded);
+};
+
+const updateNavUI = function (state) {
+  state
+    ? overlay.setAttribute('hidden', '')
+    : overlay.removeAttribute('hidden');
+  renderNav(!state);
+  navToggle.setAttribute('aria-expanded', !state);
+};
+
+const resizeObserver = new ResizeObserver(() => {
+  document.body.classList.add('resizing');
+  const navState = navToggle.getAttribute('aria-label') === 'close main menu';
+
+  // Desktop view: hide overlay and reset nav state
+  if (window.innerWidth >= MOBILE_BREAKPOINT && navState) {
+    updateNavUI(true);
+  }
+
+  // Mobile view: show overlay and maintain open nav
+  if (window.innerWidth < MOBILE_BREAKPOINT && navState) {
+    updateNavUI(false);
+  }
+
+  requestAnimationFrame(() => document.body.classList.remove('resizing'));
+});
 
 const animateWords = function (text, element) {
   element.innerHTML = '';
@@ -56,43 +100,78 @@ const clearSlideShow = function () {
 
 const startSlideShow = function () {
   clearSlideShow();
-  slideIntervalId = setInterval(prevSlide, 5000);
+  slideIntervalId = setInterval(nextSlide, 5000);
 };
 
-const goToSlide = function (index, direction = 'forward') {
-  // heroTitle.innerText = images[index].title;
-  // heroBody.innerText = images[index].body;
+const saveToLocalStorage = function (index) {
+  localStorage.setItem('slide', JSON.stringify(index));
+};
 
-  animateWords(images[index].title, heroTitle);
-  animateWords(images[index].body, heroBody);
+const goToSlide = function (newIndex, direction = 'next') {
+  if (isTransitioning || newIndex === currentIndex) return;
 
-  heroSource.srcset = images[index].desktop;
-  heroImg.alt = images[index].alt;
-  heroImg.src = images[index].mobile;
+  isTransitioning = true;
 
-  heroPicture.classList.remove('slide-in-forward', 'slide-in-reverse');
-  void heroPicture.offsetWidth;
-  heroPicture.classList.add(
-    direction === 'forward' ? 'slide-in-forward' : 'slide-in-reverse'
+  const currentPic = slider.querySelector('picture.active');
+  const newPic = document.createElement('picture');
+  newPic.classList.add(direction === 'next' ? 'reveal-next' : 'reveal-back');
+  newPic.classList.add('hero__picture');
+
+  // Create desktop image (source)
+  const source = document.createElement('source');
+  const desktopSrc = images[newIndex].desktop;
+  source.srcset = desktopSrc;
+  source.media = '(min-width: 760px)';
+
+  // Create mobile image (img)
+  const img = document.createElement('img');
+  const mobileSrc = images[newIndex].mobile;
+  img.src = mobileSrc;
+  img.alt = images[newIndex].alt;
+
+  newPic.appendChild(source);
+  newPic.appendChild(img);
+
+  /// Insert newPic before currentPic (so it's underneath)
+  slider.insertBefore(newPic, currentPic);
+
+  // Force reflow to start the transition
+  void newPic.offsetWidth;
+
+  // Animate reveal
+  newPic.style.clipPath = 'circle(150% at 50% 50%)';
+
+  // Wait for the CSS transition to finish before cleaning up
+  newPic.addEventListener(
+    'transitionend',
+    () => {
+      currentPic.remove();
+      newPic.className = 'active';
+      isTransitioning = false;
+    },
+    { once: true }
   );
+
+  currentIndex = newIndex;
+
+  animateWords(images[newIndex].title, heroTitle);
+  animateWords(images[newIndex].body, heroBody);
 };
 
 const nextSlide = function () {
-  currentSlide = (currentSlide + 1) % images.length;
-  goToSlide(currentSlide, 'forward');
-  saveToLocalStorage();
-  startSlideShow();
+  const nextIndex = (currentIndex + 1) % images.length;
+  saveToLocalStorage(nextIndex);
+  goToSlide(nextIndex);
+
+  // startSlideShow();
 };
 
 const prevSlide = function () {
-  currentSlide = (currentSlide - 1 + images.length) % images.length;
-  goToSlide(currentSlide, 'reverse');
-  saveToLocalStorage();
-  startSlideShow();
-};
+  const prevIndex = (currentIndex - 1 + images.length) % images.length;
+  saveToLocalStorage(prevIndex);
+  goToSlide(prevIndex, 'back');
 
-const saveToLocalStorage = function () {
-  localStorage.setItem('slide', JSON.stringify(currentSlide));
+  // startSlideShow();
 };
 
 const handleKeyBoardNav = function (e) {
@@ -116,24 +195,55 @@ const handleSwipe = function () {
   }
 };
 
-const init = function () {
-  startSlideShow();
-  const savedSlide = JSON.parse(localStorage.getItem('slide'));
-  goToSlide(savedSlide);
+const handleTouchStart = function(e) {
+  touchStartX = e.changedTouches[0].screenX;
 };
 
-heroPicture.addEventListener(
-  'touchstart',
-  (e) => (touchStartX = e.changedTouches[0].screenX)
-);
-heroPicture.addEventListener('touchend', (e) => {
+const handleTouchEnd = function(e) {
+  if (!touchStartX) return; // Guard against invalid touch start
+  
   touchEndX = e.changedTouches[0].screenX;
   handleSwipe();
-});
-hero.addEventListener('mouseenter', clearSlideShow);
-hero.addEventListener('mouseleave', startSlideShow);
+  
+  // Reset touch coordinates
+  touchStartX = 0;
+  touchEndX = 0;
+};
+
+const init = function () {
+  // startSlideShow();
+
+  // Get saved index once and store in variable
+  const savedIndex = Number(localStorage.getItem('slide')) || 0;
+
+  // Set currentIndex directly without transition
+  currentIndex = savedIndex;
+
+  // Update initial content without animation
+  const initialImage = images[currentIndex];
+  heroTitle.textContent = initialImage.title;
+  heroBody.textContent = initialImage.body;
+
+  // Update initial image sources
+  const picture = slider.querySelector('picture');
+  const source = picture.querySelector('source');
+  const img = picture.querySelector('img');
+
+  source.srcset = initialImage.desktop;
+  img.src = initialImage.mobile;
+  img.alt = initialImage.alt;
+  picture.classList.add('active');
+};
+
+slider.addEventListener('touchstart', handleTouchStart, { passive: true });
+slider.addEventListener('touchend', handleTouchEnd);
+[hero, navWrapper].forEach((el) =>
+  el.addEventListener('mouseenter', clearSlideShow)
+);
 document.addEventListener('keydown', handleKeyBoardNav);
 prevButton.addEventListener('click', prevSlide);
 nextButton.addEventListener('click', nextSlide);
+navToggle.addEventListener('click', toggleNavMenu);
+resizeObserver.observe(document.body);
 
 init();

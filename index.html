@@ -20,6 +20,7 @@
     <script src="js/main.js" defer></script>
   </head>
   <body>
+    <a class="skip-to-main" href="#main">Skip to main content</a>
     <header class="site-header">
       <div class="wrapper">
         <div class="site-header__inner">
@@ -38,27 +39,31 @@
           </button>
           <nav id="primaryNav" class="primary-nav" aria-label="Main navigation">
             <ul>
-              <li><a href="/">Home</a></li>
-              <li><a href="#">Shop</a></li>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Contact</a></li>
+              <li class="hover-underline"><a href="/">Home</a></li>
+              <li class="hover-underline"><a href="#">Shop</a></li>
+              <li class="hover-underline"><a href="#">About</a></li>
+              <li class="hover-underline"><a href="#">Contact</a></li>
             </ul>
           </nav>
         </div>
       </div>
     </header>
-    <main>
+    <main id="main">
       <section id="hero" class="hero">
         <div class="hero__media">
-          <picture id="heroPicture" class="hero__picture">
+          <picture id="heroPicture" class="hero__picture active">
             <source
               srcset="images/desktop-image-hero-1.jpg"
               media="(min-width: 760px)"
+              width="840"
+              height="534"
             />
             <img
               src="images/mobile-image-hero-1.jpg"
               alt="A modern dining table surrounded by white chairs with
               a decorative bonsai plant placed on top"
+              width="375"
+              height="360"
             />
           </picture>
         </div>
@@ -114,6 +119,7 @@
           />
         </div>
       </section>
+      <div id="overlay" class="overlay" hidden></div>
     </main>
   </body>
 </html>
