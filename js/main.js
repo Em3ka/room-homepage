@@ -5,6 +5,7 @@ const prevButton = document.getElementById('sliderPrev');
 const hero = document.getElementById('hero');
 const heroPicture = document.getElementById('heroPicture');
 const heroTitle = document.getElementById('heroTitle');
+const heroText = document.getElementById('heroText');
 const heroBody = document.getElementById('heroBody');
 const slider = document.querySelector('.hero__media');
 const overlay = document.getElementById('overlay');
@@ -66,6 +67,10 @@ const updateNavUI = function (state) {
 
 const resizeObserver = new ResizeObserver(() => {
   document.body.classList.add('resizing');
+
+  // Recalculate height on significant resize
+  calculateRequiredHeight();
+
   const navState = navToggle.getAttribute('aria-label') === 'close main menu';
 
   // Desktop view: hide overlay and reset nav state
@@ -107,6 +112,37 @@ const saveToLocalStorage = function (index) {
   localStorage.setItem('slide', JSON.stringify(index));
 };
 
+// Calculate the required height dynamically
+const calculateRequiredHeight = function () {
+  // Only apply min-height when viewport is less than 1110px
+  if (window.innerWidth >= 1110) {
+    heroText.style.minHeight = 'auto';
+    return;
+  }
+
+  // Temporarily remove min-height to measure natural content
+  heroText.style.minHeight = 'auto';
+
+  let maxHeight = 0;
+
+  // Measure each slide's content height
+  images.forEach((slide) => {
+    // Temporarily set content
+    heroTitle.textContent = slide.title;
+    heroBody.textContent = slide.body;
+
+    // Measure the height with THIS content
+    const height = heroText.offsetHeight;
+
+    // Keep track of the TALLEST slide
+    maxHeight = Math.max(maxHeight, height);
+  });
+
+  // Set min-height with some buffer to accommodate the TALLEST slide
+  const bufferHeight = 24;
+  heroText.style.minHeight = `${maxHeight + bufferHeight}px`;
+};
+
 const goToSlide = function (newIndex, direction = 'next') {
   if (isTransitioning || newIndex === currentIndex) return;
 
@@ -135,13 +171,15 @@ const goToSlide = function (newIndex, direction = 'next') {
   /// Insert newPic before currentPic (so it's underneath)
   slider.insertBefore(newPic, currentPic);
 
-  // Force reflow to start the transition
+  // Force reflow and start image transition
   void newPic.offsetWidth;
-
-  // Animate reveal
   newPic.style.clipPath = 'circle(150% at 50% 50%)';
 
-  // Wait for the CSS transition to finish before cleaning up
+  // Update text content (while image is transitioning)
+  animateWords(images[newIndex].title, heroTitle);
+  animateWords(images[newIndex].body, heroBody);
+
+  // Clean up when image transition completes
   newPic.addEventListener(
     'transitionend',
     () => {
@@ -153,25 +191,20 @@ const goToSlide = function (newIndex, direction = 'next') {
   );
 
   currentIndex = newIndex;
-
-  animateWords(images[newIndex].title, heroTitle);
-  animateWords(images[newIndex].body, heroBody);
 };
 
 const nextSlide = function () {
   const nextIndex = (currentIndex + 1) % images.length;
   saveToLocalStorage(nextIndex);
   goToSlide(nextIndex);
-
-  // startSlideShow();
+  startSlideShow();
 };
 
 const prevSlide = function () {
   const prevIndex = (currentIndex - 1 + images.length) % images.length;
   saveToLocalStorage(prevIndex);
   goToSlide(prevIndex, 'back');
-
-  // startSlideShow();
+  startSlideShow();
 };
 
 const handleKeyBoardNav = function (e) {
@@ -195,23 +228,27 @@ const handleSwipe = function () {
   }
 };
 
-const handleTouchStart = function(e) {
+const handleTouchStart = function (e) {
   touchStartX = e.changedTouches[0].screenX;
 };
 
-const handleTouchEnd = function(e) {
+const handleTouchEnd = function (e) {
   if (!touchStartX) return; // Guard against invalid touch start
-  
+
   touchEndX = e.changedTouches[0].screenX;
   handleSwipe();
-  
+
   // Reset touch coordinates
   touchStartX = 0;
   touchEndX = 0;
 };
 
 const init = function () {
-  // startSlideShow();
+  // Calculate required height after content is loaded
+  setTimeout(calculateRequiredHeight, 100);
+
+  // Start slide show
+  startSlideShow();
 
   // Get saved index once and store in variable
   const savedIndex = Number(localStorage.getItem('slide')) || 0;
