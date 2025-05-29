@@ -54,7 +54,10 @@
           <div class="visually-hidden">
             Slide <span id="currentSlide">1</span> of 3
           </div>
-          <picture class="product-showcase__picture active">
+          <picture
+            id="showcasePicture"
+            class="product-showcase__picture active"
+          >
             <source
               srcset="images/desktop-image-hero-1.jpg"
               media="(min-width: 760px)"
@@ -82,19 +85,29 @@
             you love.
           </p>
           <a class="button" href="#">Shop now</a>
-          <div class="slider-controls" aria-label="Carousel Navigation">
+          <div
+            class="slider-controls"
+            role="group"
+            aria-label="Carousel Navigation"
+          >
             <button
               id="sliderPrev"
               class="slider-button slider-button--prev"
+              type="button"
               aria-label="Previous slide"
               aria-controls="showcasePicture showcaseTitle showcaseBody"
-            ></button>
+            >
+              <span class="visually-hidden">Previous</span>
+            </button>
             <button
               id="sliderNext"
               class="slider-button slider-button--next"
+              type="button"
               aria-label="Next slide"
               aria-controls="showcasePicture showcaseTitle showcaseBody"
-            ></button>
+            >
+              <span class="visually-hidden">Next</span>
+            </button>
           </div>
         </div>
       </section>
