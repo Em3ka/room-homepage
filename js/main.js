@@ -2,12 +2,11 @@ const navToggle = document.querySelector('[aria-controls="primaryNav"]');
 const navWrapper = document.getElementById('primaryNav');
 const nextButton = document.getElementById('sliderNext');
 const prevButton = document.getElementById('sliderPrev');
-const hero = document.getElementById('hero');
-const heroPicture = document.getElementById('heroPicture');
-const heroTitle = document.getElementById('heroTitle');
-const heroText = document.getElementById('heroText');
-const heroBody = document.getElementById('heroBody');
-const slider = document.querySelector('.hero__media');
+const productShowcase = document.getElementById('productShowcase');
+const slider = document.getElementById('slider');
+const showcaseContent = document.getElementById('showcaseContent');
+const showcaseTitle = document.getElementById('showcaseTitle');
+const showcaseBody = document.getElementById('showcaseBody');
 const overlay = document.getElementById('overlay');
 
 const SWIPE_THRESHOLD = 50;
@@ -22,21 +21,21 @@ const images = [
   {
     desktop: './images/desktop-image-hero-1.jpg',
     mobile: './images/mobile-image-hero-1.jpg',
-    alt: 'Modern dining table with bonsai plant',
+    alt: 'A dining setup featuring two white modern chairs and a wooden table with a bonsai plant centerpiece against a gray wall.',
     title: 'Discover innovative ways to decorate',
     body: 'We provide unmatched quality, comfort, and style for property owners across the country. Our experts combine form and function in bringing your vision to life. Create a room in your own style with our collection and make your property a reflection of you and what you love.',
   },
   {
     desktop: './images/desktop-image-hero-2.jpg',
     mobile: './images/mobile-image-hero-2.jpg',
-    alt: 'Stylish modern chairs in sunlight',
+    alt: 'Three chairs in yellow, light green, and white, against a muted gray background.',
     title: 'We are available all across the globe',
     body: "With stores all over the world, it's easy for you to find furniture for your home or place of business. Locally, we’re in most major cities throughout the country. Find the branch nearest you using our store locator. Any questions? Don't hesitate to contact us today.",
   },
   {
     desktop: './images/desktop-image-hero-3.jpg',
     mobile: './images/mobile-image-hero-3.jpg',
-    alt: 'Minimalist living room setup',
+    alt: 'A sleek black folding chair positioned against a dark background, highlighting.',
     title: 'Manufactured with the best materials',
     body: 'Our modern furniture store provide a high level of quality. Our company has invested in advanced technology to ensure that every product is made as perfect and as consistent as possible. With three decades of experience in this industry, we understand what customers want for their home and office.',
   },
@@ -109,30 +108,34 @@ const startSlideShow = function () {
 };
 
 const saveToLocalStorage = function (index) {
-  localStorage.setItem('slide', JSON.stringify(index));
+  try {
+    localStorage.setItem('slide', JSON.stringify(index));
+  } catch (error) {
+    console.log('Storage failed:', error);
+  }
 };
 
 // Calculate the required height dynamically
 const calculateRequiredHeight = function () {
   // Only apply min-height when viewport is less than 1110px
   if (window.innerWidth >= 1110) {
-    heroText.style.minHeight = 'auto';
+    showcaseContent.style.minHeight = 'auto';
     return;
   }
 
   // Temporarily remove min-height to measure natural content
-  heroText.style.minHeight = 'auto';
+  showcaseContent.style.minHeight = 'auto';
 
   let maxHeight = 0;
 
   // Measure each slide's content height
   images.forEach((slide) => {
     // Temporarily set content
-    heroTitle.textContent = slide.title;
-    heroBody.textContent = slide.body;
+    showcaseTitle.textContent = slide.title;
+    showcaseBody.textContent = slide.body;
 
     // Measure the height with THIS content
-    const height = heroText.offsetHeight;
+    const height = showcaseContent.offsetHeight;
 
     // Keep track of the TALLEST slide
     maxHeight = Math.max(maxHeight, height);
@@ -140,18 +143,19 @@ const calculateRequiredHeight = function () {
 
   // Set min-height with some buffer to accommodate the TALLEST slide
   const bufferHeight = 24;
-  heroText.style.minHeight = `${maxHeight + bufferHeight}px`;
+  showcaseContent.style.minHeight = `${maxHeight + bufferHeight}px`;
 };
 
 const goToSlide = function (newIndex, direction = 'next') {
   if (isTransitioning || newIndex === currentIndex) return;
 
   isTransitioning = true;
+  const currentSlide = newIndex + 1;
 
   const currentPic = slider.querySelector('picture.active');
   const newPic = document.createElement('picture');
   newPic.classList.add(direction === 'next' ? 'reveal-next' : 'reveal-back');
-  newPic.classList.add('hero__picture');
+  newPic.classList.add('product-showcase__picture');
 
   // Create desktop image (source)
   const source = document.createElement('source');
@@ -165,8 +169,19 @@ const goToSlide = function (newIndex, direction = 'next') {
   img.src = mobileSrc;
   img.alt = images[newIndex].alt;
 
+  // Set accessibility attributes
+  if (currentPic) currentPic.setAttribute('aria-current', 'false');
+  newPic.setAttribute(
+    'aria-label',
+    `Slide ${currentSlide} of ${images.length}`
+  );
+  newPic.setAttribute('aria-current', 'true');
+
   newPic.appendChild(source);
   newPic.appendChild(img);
+
+  // Update slide counter
+  document.getElementById('currentSlide').textContent = currentSlide;
 
   /// Insert newPic before currentPic (so it's underneath)
   slider.insertBefore(newPic, currentPic);
@@ -176,8 +191,8 @@ const goToSlide = function (newIndex, direction = 'next') {
   newPic.style.clipPath = 'circle(150% at 50% 50%)';
 
   // Update text content (while image is transitioning)
-  animateWords(images[newIndex].title, heroTitle);
-  animateWords(images[newIndex].body, heroBody);
+  animateWords(images[newIndex].title, showcaseTitle);
+  animateWords(images[newIndex].body, showcaseBody);
 
   // Clean up when image transition completes
   newPic.addEventListener(
@@ -258,8 +273,8 @@ const init = function () {
 
   // Update initial content without animation
   const initialImage = images[currentIndex];
-  heroTitle.textContent = initialImage.title;
-  heroBody.textContent = initialImage.body;
+  showcaseTitle.textContent = initialImage.title;
+  showcaseBody.textContent = initialImage.body;
 
   // Update initial image sources
   const picture = slider.querySelector('picture');
@@ -274,9 +289,10 @@ const init = function () {
 
 slider.addEventListener('touchstart', handleTouchStart, { passive: true });
 slider.addEventListener('touchend', handleTouchEnd);
-[hero, navWrapper].forEach((el) =>
+[productShowcase, navWrapper].forEach((el) =>
   el.addEventListener('mouseenter', clearSlideShow)
 );
+productShowcase.addEventListener('mouseleave', startSlideShow);
 document.addEventListener('keydown', handleKeyBoardNav);
 prevButton.addEventListener('click', prevSlide);
 nextButton.addEventListener('click', nextSlide);

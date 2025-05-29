@@ -49,9 +49,12 @@
       </div>
     </header>
     <main id="main">
-      <section id="hero" class="hero">
-        <div class="hero__media">
-          <picture id="heroPicture" class="hero__picture active">
+      <section id="productShowcase" class="product-showcase">
+        <div id="slider" class="product-showcase__media" aria-live="polite">
+          <div class="visually-hidden">
+            Slide <span id="currentSlide">1</span> of 3
+          </div>
+          <picture class="product-showcase__picture active">
             <source
               srcset="images/desktop-image-hero-1.jpg"
               media="(min-width: 760px)"
@@ -67,11 +70,11 @@
             />
           </picture>
         </div>
-        <div id="heroText" class="hero__text">
-          <h1 id="heroTitle" class="text-lg">
+        <div id="showcaseContent" class="product-showcase__content">
+          <h1 id="showcaseTitle" class="text-lg">
             Discover innovative ways to decorate
           </h1>
-          <p id="heroBody">
+          <p id="showcaseBody">
             We provide unmatched quality, comfort, and style for property owners
             across the country. Our experts combine form and function in
             bringing your vision to life. Create a room in your own style with
@@ -79,16 +82,18 @@
             you love.
           </p>
           <a class="button" href="#">Shop now</a>
-          <div class="slider-controls">
+          <div class="slider-controls" aria-label="Carousel Navigation">
             <button
               id="sliderPrev"
               class="slider-button slider-button--prev"
               aria-label="Previous slide"
+              aria-controls="showcasePicture showcaseTitle showcaseBody"
             ></button>
             <button
               id="sliderNext"
               class="slider-button slider-button--next"
               aria-label="Next slide"
+              aria-controls="showcasePicture showcaseTitle showcaseBody"
             ></button>
           </div>
         </div>
@@ -119,7 +124,7 @@
           />
         </div>
       </section>
-      <div id="overlay" class="overlay" hidden></div>
+      <div id="overlay" class="overlay-bg" hidden></div>
     </main>
   </body>
 </html>
