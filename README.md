@@ -25,7 +25,7 @@ Users should be able to:
 
 ### 📸 Screenshot
 
-![Room homepage](./screenshot/room-homepage.png)
+<img src="./screenshot/room-homepage.png" alt="Room homepage" width="400"/>
 
 ### 🔗 Links
 
